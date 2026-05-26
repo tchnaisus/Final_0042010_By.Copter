@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แนวข้อสอบออกกำลังกายและโภชนาการ (Online Pro)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Sarabun', sans-serif; 
+            background-color: #f8fafc; 
+            scroll-behavior: smooth;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .choice-btn { 
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
+        }
+        .choice-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+        }
+        .choice-btn:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+        .question-card { 
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
+        .fade-in {
+            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        /* Custom SweetAlert2 Theme */
+        .swal2-popup {
+            font-family: 'Sarabun', sans-serif !important;
+            border-radius: 1.5rem !important;
+            padding: 2rem !important;
+        }
+        .swal2-title {
+            color: #0f172a !important;
+            font-weight: 700 !important;
+            font-size: 1.25rem !important;
+        }
+        .swal2-html-container {
+            color: #475569 !important;
+            font-size: 0.95rem !important;
+        }
+        .swal2-confirm {
+            background-color: #0f172a !important;
+            border-radius: 0.75rem !important;
+            font-size: 0.875rem !important;
+            padding: 0.625rem 1.75rem !important;
+            font-weight: 500 !important;
+            box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.2) !important;
+        }
+        .my-rank-highlight {
+            background-color: #f0fdf4 !important;
+            position: relative;
+        }
+        .my-rank-highlight::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background-color: #10b981;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-700 antialiased flex flex-col justify-between select-none bg-gradient-to-b from-slate-50 to-slate-100/50">
+
+    <div class="fixed top-0 left-0 w-full h-1 bg-slate-100 z-50">
+        <div id="progress-bar" class="bg-gradient-to-r from-slate-700 to-slate-900 h-1 w-0 transition-all duration-500 ease-out"></div>
+    </div>
+
+    <header class="max-w-3xl mx-auto w-full px-4 sm:px-6 pt-8 sm:pt-12 pb-5 flex flex-col sm:flex-row justify-between items-start sm:items-end border-b border-slate-200/80 gap-4">
+        <div>
+            <span class="inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-bold tracking-wider text-indigo-500 bg-indigo-50 px-2.5 py-1 rounded-md uppercase mb-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>  Final 0042010
+            </span>
+            <h1 class="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5 tracking-tight">แนวข้อสอบออกกำลังกาย & โภชนาการ</h1>
+        </div>
+        <div id="user-badge" class="hidden text-xs sm:text-sm font-medium text-slate-500 bg-white border border-slate-200 rounded-2xl p-3 shadow-sm flex items-center justify-between w-full sm:w-auto gap-4 transition-all">
+            <div class="flex items-center gap-2 truncate max-w-[150px] sm:max-w-[200px]">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0 shadow-sm shadow-emerald-400 animate-pulse"></span>
+                <span class="text-slate-400 font-normal">ผู้ใช้:</span>
+                <span id="current-player-name" class="font-bold text-slate-800 truncate"></span> 
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0 pl-3 border-l border-slate-200">
+                <span class="text-slate-400 font-normal">คะแนน:</span>
+                <span id="live-score" class="font-bold text-slate-950 text-base">0</span> <span class="text-[10px] text-slate-400">/ 40</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 flex-grow">
+        
+        <div id="auth-box" class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xl shadow-slate-200/40 max-w-md mx-auto my-6 sm:my-12 fade-in">
+            <div class="w-12 h-12 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-center mb-4 shadow-sm">
+                <i class="fa-regular fa-globe text-slate-700 text-lg"></i>
+            </div>
+            <h2 class="text-base sm:text-lg font-bold text-slate-900 mb-1">ยินดีต้อนรับเข้าสู่ระบบสอบออนไลน์</h2>
+            <p class="text-xs sm:text-sm text-slate-400 mb-6 leading-relaxed">ข้อมูลและคะแนนสูงสุดของคุณจะถูกจัดอันดับรวมแบบ Real-time กับผู้เข้าสอบท่านอื่นบนระบบคลาวด์</p>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">ชื่อผู้ใช้งานของคุณ</label>
+                    <input type="text" id="username-input" maxlength="25" placeholder="พิมพ์ชื่อเล่นหรือชื่อจริง..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:border-slate-400 focus:bg-white transition-all text-slate-800 font-semibold shadow-inner placeholder:text-slate-300">
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                    <button onclick="openLeaderboardModal()" class="w-full sm:w-auto bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:text-slate-900 text-slate-700 font-medium text-xs sm:text-sm px-4 py-3.5 rounded-xl transition-all active:scale-[0.99] flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-trophy text-amber-500"></i> ดูอันดับปัจจุบัน
+                    </button>
+                    <button onclick="startQuiz()" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs sm:text-sm py-3.5 rounded-xl transition-all active:scale-[0.99] flex items-center justify-center gap-2 shadow-md shadow-slate-900/10">
+                        เริ่มทำข้อสอบ <i class="fa-solid fa-arrow-right text-[10px] sm:text-xs"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="quiz-container" class="hidden space-y-6 sm:space-y-8"></div>
+
+        <div id="result-box" class="hidden space-y-6 sm:space-y-8 mt-4 fade-in">
+            <div class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 text-center shadow-xl shadow-slate-200/50 max-w-md mx-auto">
+                <div class="w-12 h-12 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                    <i class="fa-solid fa-cloud-arrow-up text-lg text-emerald-600"></i>
+                </div>
+                <h2 class="text-base sm:text-lg font-bold text-slate-900 mb-1">ส่งคะแนนออนไลน์เรียบร้อย!</h2>
+                <p id="result-meta-text" class="text-xs text-slate-400 px-2 mb-6 leading-relaxed">ระบบกำลังประมวลผลอันดับการทดสอบของคุณ...</p>
+                
+                <div class="bg-slate-50/80 rounded-2xl py-4 sm:py-5 px-6 sm:px-8 mb-6 border border-slate-100 inline-block min-w-[180px] shadow-inner">
+                    <div class="text-4xl sm:text-[46px] font-bold text-slate-900 tracking-tight leading-none mb-1.5">
+                        <span id="final-score">0</span><span class="text-sm sm:text-base text-slate-400 font-normal"> / 40</span>
+                    </div>
+                    <div id="score-percent" class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-white px-2 py-0.5 rounded-md border border-slate-100 inline-block">ร้อยละ 0%</div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="changeUser()" class="flex-1 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium text-xs py-3.5 rounded-xl transition-all active:scale-[0.99]">เปลี่ยนผู้เล่น</button>
+                    <button onclick="resetQuiz()" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs py-3.5 rounded-xl transition-all active:scale-[0.99] flex items-center justify-center gap-1.5 shadow-md shadow-slate-900/10">
+                        <i class="fa-solid fa-arrow-rotate-right text-[10px]"></i> ทำใหม่อีกครั้ง
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl border border-slate-200 p-5 sm:p-8 max-w-md mx-auto shadow-xl shadow-slate-200/30">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                        <i class="fa-solid fa-earth-americas text-indigo-500 text-xs animate-spin-slow"></i> ตารางอันดับรวมของทุกคน
+                    </h3>
+                    <button onclick="fetchGlobalLeaderboard('main-leaderboard')" class="text-indigo-500 hover:text-indigo-600 text-[10px] sm:text-[11px] font-bold transition-colors flex items-center gap-1"><i class="fa-solid fa-arrows-rotate"></i> รีเฟรชอันดับ</button>
+                </div>
+                <div class="overflow-x-auto rounded-2xl border border-slate-100 shadow-inner">
+                    <table class="w-full text-left border-collapse text-xs table-fixed">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold">
+                                <th class="py-3.5 px-3 w-14 text-center">อันดับ</th>
+                                <th class="py-3.5 px-1 w-auto">ชื่อผู้ใช้</th>
+                                <th class="py-3.5 px-3 w-28 text-right">คะแนนรวมสูงสุด</th>
+                            </tr>
+                        </thead>
+                        <tbody id="main-leaderboard" class="text-slate-600 divide-y divide-slate-50 font-medium">
+                            <tr><td colspan="3" class="text-center py-6 text-slate-400 italic">กำลังโหลดคะแนนจากเซิร์ฟเวอร์...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="leaderboard-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl border border-slate-150 w-full max-w-md p-5 sm:p-7 shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[80vh]">
+            <div class="flex justify-between items-center pb-4 border-b border-slate-100 shrink-0">
+                <h3 class="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-trophy text-amber-500 text-base"></i> ทำเนียบอันดับเกียรติยศ (Live)
+                </h3>
+                <button onclick="closeLeaderboardModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-50 transition-colors">
+                    <i class="fa-solid fa-xmark text-sm sm:text-base"></i>
+                </button>
+            </div>
+            
+            <div class="overflow-y-auto my-4 rounded-2xl border border-slate-100 flex-grow shadow-inner bg-slate-50/30">
+                <table class="w-full text-left border-collapse text-xs table-fixed">
+                    <thead class="sticky top-0 z-10 bg-slate-50 border-b border-slate-100">
+                        <tr class="text-slate-400 font-bold">
+                            <th class="py-3 px-3 w-14 text-center">อันดับ</th>
+                            <th class="py-3 px-1 w-auto">ชื่อผู้ใช้</th>
+                            <th class="py-3 px-3 w-28 text-right">คะแนนรวมสูงสุด</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modal-leaderboard" class="text-slate-600 divide-y divide-slate-50 font-medium">
+                        <tr><td colspan="3" class="text-center py-6 text-slate-400 italic">กำลังดึงข้อมูลอันดับล่าสุด...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="pt-1 shrink-0">
+                <button onclick="closeLeaderboardModal()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs sm:text-sm py-3.5 rounded-xl transition-all shadow-md shadow-slate-900/10 text-center">
+                    ปิดหน้าต่างทำเนียบ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="max-w-3xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8 border-t border-slate-200/50 text-center text-[11px] text-slate-400 flex flex-col sm:flex-row justify-between items-center gap-2">
+        <div>วิชาการจัดการออกกำลังกายและโภชนาการ (ไฟนอล)</div>
+        <div class="font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded">By.Copter</div>
+    </footer>
+
+    <script>
+        // ==================== CONFIGURATION ====================
+        const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSevHelAKqw2j94SsYczERPsjLFPpZC_JjetaMyEYhNb0j_HMA/formResponse";
+        const ENTRY_NAME_ID = "entry.818707147";   
+        const ENTRY_SCORE_ID = "entry.626553140";  
+
+        const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/1AxMNk2PvSLJaDY9b_VvYK2KjMTP86SNNwL8hnyunY3A/export?format=csv";
+        // =======================================================
+
+        const masterQuestionsData = [
+            { q: "พีระมิดของอาหารที่เป็นส่วนฐานคือสารอาหารประเภทใด", correct: "คาร์โบไฮเดรต", choices: ["คาร์โบไฮเดรต", "โปรตีน", "วิตามินและเกลือแร่", "ไขมัน"] },
+            { q: "เกลือแร่ใดที่ร่างกายต้องการ ในขนาดมากกว่าวันละ 100 มิลลิกรัม", correct: "โพแทสเซียม แคลเซียม แมกนีเซียม และกำมะถัน", choices: ["โพแทสเซียม แคลเซียม แมกนีเซียม และกำมะถัน", "เหล็ก สังกะสี ไอโอดีน และทองแดง", "โซเดียม คลอไรด์ สังกะสี และฟลูออไรด์", "ซีลีเนียม แมงกานีส โครเมียม และโบรอน"] },
+            { q: "ข้อใดกล่าวไม่ถูกต้องเกี่ยวกับวัยรุ่น", correct: "วัยรุ่นชาย-หญิง ควรได้รับพลังงานประมาณ 1,000-1,200 กิโลแคลอรีต่อวัน", choices: ["วัยรุ่นเป็นวัยที่มีการเจริญเติบโตรวดเร็วและพฤทีพรรรมเปลี่ยนแปลงง่าย", "วัยรุ่นชาย-หญิง ควรได้รับพลังงานประมาณ 1,000-1,200 กิโลแคลอรีต่อวัน", "วัยรุ่นต้องการสารอาหารประเภทโปรตีนและแคลเซียมสูงเพื่อสร้างกระดูกและกล้ามเนื้อ", "ความต้องการพลังงานของวัยรุ่นแปรผันตามกิจกรรมและการทำกิจกรรมทางกาย"] },
+            { q: "ข้อใดไม่ใช่ประโยชน์หลักของอาหารฟังก์ชัน (Functional Foods)", correct: "เพื่อให้พลังงานแก่ร่างกาย", choices: ["เพื่อลดความเสี่ยงต่อการเกิดโรคเรื้อรัง", "เพื่อบำรุงระบบภูมิคุ้มกันและชะลอวัย", "เพื่อให้พลังงานแก่ร่างกาย", "เพื่อปรับปรุงระบบขับถ่ายและการทำงานของลำไส้"] },
+            { q: "ผู้ใดเป็นมังสวิรัติแท้", correct: "เสี่ยวจุ้ย รับประทานอาหารจาก ถั่วงา เต้าหู้ ผักผลไม้ และข้าวสารไม่ขัดสีเท่านั้นตลอดเวลาที่ผ่านมา", choices: ["แดง รับประทานผักผลไม้แต่ยังบริโภคนมและไข่เป็นประจำ", "เสี่ยวจุ้ย รับประทานอาหารจาก ถั่วงา เต้าหู้ ผักผลไม้ และข้าวสารไม่ขัดสีเท่านั้นตลอดเวลาที่ผ่านมา", "ขาว รับประทานเนื้อปลาและอาหารทะเลร่วมกับผัก", "ดำ งดเนื้อสัตว์ใหญ่แต่นิยมรับประทานเนื้อไก่และไข่ไก่"] },
+            { q: "ข้อใดไม่ใช่ข้อมูลที่ผู้บริโภคจะได้รับจากฉลากอาหาร (Food labeling)", correct: "แหล่งจำหน่าย", choices: ["ชื่ออาหารและตราสินค้า", "วันผลิตและวันหมดอายุ", "ข้อมูลผู้ผลิตและสถานที่ตั้ง", "แหล่งจำหน่าย"] },
+            { q: "ข้อใดไม่ใช่อาหารที่มีสารต้านอนุมูลอิสระ", correct: "ไนโตรเจน", choices: ["วิตามินซีในส้ม", "เบต้าแคโรทีนในแครอท", "ไนโตรเจน", "ไลโคปีนในมะเขือเทศ"] },
+            { q: "“อย” ย่อมาจากข้อใด", correct: "องค์การอาหารและยา", choices: ["สำนักงานอาหารแห่งชาติ", "องค์การอาหารและยา", "คณะกรรมการอาหารและเครื่องดื่ม", "หน่วยงานควบคุมความปลอดภัยด้านอาหาร"] },
+            { q: "ข้อใดคือข้อมูลที่ผู้บริโภคจะได้รับจากฉลากโภชนาการ (Nutrition Information)", correct: "ชนิดและปริมาณสารอาหารที่มีในอาหาร", choices: ["ชนิดและปริมาณสารอาหารที่มีในอาหาร", "รายชื่อร้านค้าที่ได้รับอนุญาตให้จัดจำหน่าย", "วิธีปรุงอาหารให้เหมาะสมตามหลักโภชนาการ", "ประวัติความเป็นมาและสูตรลับของผลิตภัณฑ์"] },
+            { q: "ข้อใดเป็น Low-glycemic food ในอาหารเมดิเตอร์เรเนียน", correct: "พาสต้าทำจากข้าวสาลีไม่ขัดขาว", choices: ["ขนมปังขาวฝรั่งเศส", "พาสต้าทำจากข้าวสาลีไม่ขัดขาว", "มันฝรั่งทอดกรอบ", "น้ำตาลทรายบริสุทธิ์"] },
+            { q: "ข้อใดเป็นการตัดสินความงามที่เป็นองค์ประกอบทั้ง 3 ส่วน", correct: "ความสมมาตร", choices: ["ความสมมาตร", "ความคมชัดของสีผิว", "ความล้ำสมัยตามแฟชั่น", "ราคาสูงของเครื่องสำอาง"] },
+            { q: "ข้อใดไม่ใช่ส่วนหนึ่งของการตัดสินความงามโดยทั่วไป", correct: "การสื่อสาร(communication)", choices: ["ความได้สัดส่วน", "ความกลมกลืนและความสมดุล", "การสื่อสาร(communication)", "ความสมบูรณ์แบบทางกายภาพ"] },
+            { q: "รังสีในข้อใดทำให้ผิวหนังแก่ตัวเร็วขึ้น", correct: "รังสียูวีเอ (UVA)", choices: ["รังสียูวีเอ (UVA)", "รังสียูวีบี (UVB)", "รังสีอินฟราเรด", "รังสีไมโครเวฟ"] },
+            { q: "ข้อใดเป็นการปฏิบัติตามข้อปฏิบัติการกินอาหารเพื่อสุขภาพที่ดีของคนไทย", correct: "ผู้ใหญ่ควรดื่มนมวันละแก้ว", choices: ["งดรับประทานข้าวและแป้งทุกชนิด", "ผู้ใหญ่ควรดื่มนมวันละแก้ว", "ดื่มน้ำอัดลมทดแทนน้ำเปล่าเมื่อสูญเสียเหงื่อ", "เน้นรับประทานอาหารหมักดองเพื่อเพิ่มจุลินทรีย์"] },
+            { q: "วัยผู้ใหญ่ควรควบคุมการบริโภคน้ำตาล ไขมัน/น้ำมัน และเกลือ ไม่เกินวันละเท่าใด เพื่อป้องกันปัญหาสุขภาพและลดความเสี่ยงต่อการเกิดโรคไม่ติดต่อเรื้อรัง (NCDs)", correct: "น้ำตาล 6 ช้อนชา ไขมัน/น้ำมัน 6 ช้อนชา และเกลือ 1 ช้อนชา", choices: ["น้ำตาล 10 ช้อนชา ไขมัน/น้ำมัน 10 ช้อนชา และเกลือ 2 ช้อนชา", "น้ำตาล 6 ช้อนชา ไขมัน/น้ำมัน 6 ช้อนชา และเกลือ 1 ช้อนชา", "น้ำตาล 4 ช้อนชา ไขมัน/น้ำมัน 8 ช้อนชา และเกลือ 1.5 ช้อนชา", "น้ำตาล 8 ช้อนชา ไขมัน/น้ำมัน 4 ช้อนชา และเกลือ 0.5 ช้อนชา"] },
+            { q: "ข้อใดบอกความหมายของสมรรถภาพทางกาย (Physical Fitness) ได้ถูกต้อง", correct: "สภาวะของร่างกายที่อยู่ในสภาพดี สามารถทำงานได้อย่างมีประสิทธิภาพ", choices: ["ความสามารถในการเล่นกีฬาประเภทใดประเภทหนึ่งจนได้ชัยชนะ", "สภาวะของร่างกายที่อยู่ในสภาพดี สามารถทำงานได้อย่างมีประสิทธิภาพ", "การมีมวลกล้ามเนื้อขนาดใหญ่และไม่มีไขมันส่วนเกินเลย", "ความสามารถในการอดอาหารและออกกำลังกายได้เป็นเวลานาน"] },
+            { q: "ข้อใดกล่าวผิดเกี่ยวกับเครื่องดื่มเพื่อสุขภาพ", correct: "บริโภคเพื่อให้ได้พลังงานเป็นหลักจากคาร์โบไฮเดรต", choices: ["ควรมีปริมาณน้ำตาลต่ำหรือไม่มีการเติมน้ำตาลเพิ่ม", "มักมีการเสริมสารอาหารที่มีประโยชน์ เช่น วิตามิน หรือใยอาหาร", "บริโภคเพื่อให้ได้พลังงานเป็นหลักจากคาร์โบไฮเดรต", "ช่วยเสริมสร้างหรือรักษาสมดุลการทำงานของระบบต่างๆ ในร่างกาย"] },
+            { q: "แมคโครไบโอติกส์ มีแนวคิดจากความเชื่อในศาสนาใด", correct: "พุทธ หลัก หยิน-หยาง ตามปรัชญาเต๋า", choices: ["พุทธ หลัก หยิน-หยาง ตามปรัชญาเต๋า", "คริสต์ ตามหลักการพึ่งพาธรรมชาติ", "อิสลาม ตามหลักการบริโภคอาหารฮาลาล", "พราหมณ์-ฮินดู ตามหลักการบูชาเทพเจ้า"] },
+            { q: "ข้อใดคือความสำคัญของการออกกำลังกาย", correct: "ถูกทุกข้อ", choices: ["ช่วยสร้างเสริมระบบไหลเวียนโลหิตและหัวใจให้แข็งแรง", "ช่วยควบคุมน้ำหนักและลดการสะสมของไขมันส่วนเกิน", "ช่วยลดความเครียดและส่งเสริมสุขภาพจิตที่ดี", "ถูกทุกข้อ"] },
+            { q: "นางสาว A ต้องการพลังงานอาหารต่อวัน เท่ากับ 1,800 Kcal หากกระจายสัดส่วนของพลังงานที่ควรได้รับจาก คาร์โบไฮเดรต โปรตีน ไขมัน เท่ากับ ร้อยละ 50:20:30 นางสาว A ควรได้รับพลังงานจากโปรตีนกี่กรัม", correct: "90 กรัม", choices: ["60 กรัม", "75 กรัม", "90 กรัม", "120 กรัม"] },
+            { q: "ข้อใดอธิบายถึงความหมายของหลักโภชนาการ ได้ถูกต้องที่สุด", correct: "การบริโภคอาหารเพื่อให้ร่างกายได้รับสารอาหารที่มีประโยชน์ในปริมาณที่เพียงพอกับความต้องการของร่างกาย", choices: ["การเลือกรับประทานเฉพาะอาหารราคาแพงและผ่านการรับรองจากต่างประเทศ", "การบริโภคอาหารเพื่อให้ร่างกายได้รับสารอาหารที่มีประโยชน์ในปริมาณที่เพียงพอกับความต้องการของร่างกาย", "การงดอาหารมื้อเย็นและเน้นทานอาหารเสริมประเภทวิตามินอัดเม็ดทดแทน", "การกินอาหารตามความชอบส่วนบุคคลโดยไม่คำึงถึงประเภทของหมู่สารอาหาร"] },
+            { q: "ข้อใดกล่าวผิดเกี่ยวกับอาหารคีโตเจนิค (ketogenic diet)", correct: "จัดเป็น Low fat diet", choices: ["เน้นการรับประทานไขมันสูงและคาร์โบไฮเดรตต่ำมาก", "กระตุ้นให้ร่างกายเข้าสู่ภาวะ Ketosis เพื่อเผาผลาญไขมัน", "จัดเป็น Low fat diet", "อาจทำให้ร่างกายขาดสารอาหารบางชนิดจากผักและผลไม้ได้"] },
+            { q: "อาหารประเภทใดจำเป็นต่อการเตรียมตัวก่อนออกกำลังกายมากที่สุด", correct: "โปรตีน", choices: ["โปรตีน", "ไขมันอิ่มตัว", "ไฟเบอร์ชนิดไม่ละลายน้ำ", "อาหารหมักดอง"] },
+            { q: "ข้อใด คือ หลักการเลือกอาหารตามข้อปฏิบัติการกินอาหารเพื่อสุขภาพที่ดีของคนไทย", correct: "เลือกอาหารที่ประกอบด้วยอาหารหลายๆอย่างได้ครบ 5 หมู่", choices: ["เน้นทานอาหารเมนูเดิมซ้ำๆ ทุกวันเพื่อความง่ายในการควบคุมปริมาณ", "เลือกอาหารที่ประกอบด้วยอาหารหลายๆอย่างได้ครบ 5 หมู่", "เน้นรับประทานอาหารดิบเพื่อคงคุณค่าของสารอาหารสูงสุด", "เลือกเฉพาะอาหารฟังก์ชันและผลิตภัณฑ์เสริมอาหารเป็นหลัก"] },
+            { q: "จากรูปที่กำหนดให้ จัดเป็นฉลากโภชนาการ (Nutrition Information) แบบใด (ข้อสมมติฐานอ้างอิงตามข้อสอบ)", correct: "ฉลากโภชนาการแบบจีดีเอ (Guideline Daily Amounts; GDA)", choices: ["ฉลากโภชนาการแบบย่อ", "ฉลากโภชนาการแบบเต็ม", "ฉลากโภชนาการแบบจีดีเอ (Guideline Daily Amounts; GDA)", "ฉลากทางเลือกสุขภาพ (Healthier Choice)"] },
+            { q: "หลักการคำวณจากสูตร 220-อายุ เป็นการหาค่าการวัดในเรื่องใด", correct: "หาค่าความเหมาะสมของชีพจรสูงสุดของแต่ละวัย", choices: ["หาค่าดัชนีมวลกายที่เหมาะสม", "หาค่าปริมาณแคลอรีที่ควรบริโภคต่อวัน", "หาค่าความเหมาะสมของชีพจรสูงสุดของแต่ละวัย", "หาค่าอัตราการเผาผลาญพื้นฐาน (BMR)"] },
+            { q: "ตามแนวทางของการรับประทานอาหารโดยใช้ธงโภชนาการ หมวดอาหาร A และ B คือข้อใด", correct: "A คือ ข้าว B คือ น้ำตาล น้ำมัน เกลือ", choices: ["A คือ ผักผลไม้ B คือ ข้าวแป้ง", "A คือ นมและเนื้อสัตว์ B คือ ไขมัน", "A คือ ข้าว B คือ น้ำตาล น้ำมัน เกลือ", "A คือ ข้าวแป้ง B คือ ผักและผลไม้"] },
+            { q: "นางสาวมาร์กี้ อายุ 20 ปี ส่วนสูง 175 cm. น้ำหนัก 43 Kg มีพฤทีพรรรมสุขภาพ ชอบดื่มน้ำอัดลม ออกกำลังกายเดือนละ 1 ครั้ง ไม่รับประทานอาหารเช้า เน้นรับประทานอาหารมื้อเย็นเป็นอาหารปิ้ง ย่าง การแปลผลภาวะโภชนาการของนางสาวมาร์กี้ตรงกับข้อใด", correct: "น้ำหนักน้อยกว่ามาตรฐาน", choices: ["น้ำหนักตามเกณฑ์มาตรฐาน", "น้ำหนักน้อยกว่ามาตรฐาน", "เริ่มอ้วน / น้ำหนักเกิน", "โรคอ้วนระดับ 1"] },
+            { q: "อาหารในข้อใดมีค่าดัชนีน้ำตาล (glycemic index) ต่ำที่สุด", correct: "ชมพู่", choices: ["แตงโม", "ข้าวขัดขาว", "ชมพู่", "ขนมปังโฮลวีทสำเร็จรูป"] },
+            { q: "ผลิตภัณฑ์อาหารฟังก์ชันกลุ่มใดแตกต่างจากข้ออื่น ๆ", correct: "ใยอาหาร", choices: ["วิตามินรวม", "แร่ธาตุเสริมสังกะสี", "สารสกัดสมุนไพรเข้มข้น", "ใยอาหาร"] },
+            { q: "ข้อใดเป็นการเลือกวัตถุดิบสำหรับการรับประทานอาหารเพื่อสุขภาพตามหลักการอาหารคลีนได้อย่างถูกต้อง", correct: "ถูกทุกข้อ", choices: ["เลือกข้าวกล้องหรือข้าวไม่ขัดสีแทนข้าวขาว", "เน้นเนื้อสัตว์ไขมันต่ำ เช่น อกไก่ หรือเนื้อปลา", "หลีกเลี่ยงอาหารแปรรูปและอาหารที่มีการปรุงรสจัด", "ถูกทุกข้อ"] },
+            { q: "ข้อใดหมายถึง nutrient density", correct: "ความหนาแน่นของสารอาหาร", choices: ["ปริมาณพลังงานรวมของอาหาร", "ความหนาแน่นของสารอาหาร", "ความเข้มข้นของไขมันในผลิตภัณฑ์", "อัตราการย่อยของคาร์โบไฮเดรต"] },
+            { q: "ข้อใดไม่ใช่ปัจจัยที่นำมาใช้ในการคำนวณพลังงานที่ควรได้รับต่อวันของบุคคล", correct: "กลุ่มสารอาหารที่ให้พลังงาน", choices: ["อายุและเพศ", "น้ำหนักและส่วนสูง", "ระดับกิจกรรมทางกายในแต่ละวัน", "กลุ่มสารอาหารที่ให้พลังงาน"] },
+            { q: "ข้อใดคือแร่ธาตุที่วัยรุ่นและผู้ใหญ่เพศหญิงที่มีการสูญเสียเลือดจากประจำเดือนต้องได้รับในแต่ละวันเพิ่มมากขึ้น", correct: "แร่ธาตุเหล็ก", choices: ["แคลเซียม", "แร่ธาตุเหล็ก", "โซเดียม", "สังกะสี"] },
+            { q: "“เนยวิ่งออกกำลังกายทุกเช้าเป็นประจำสัปดาห์ละ 3 วัน” อยากทราบว่าเนยนำหลักข้อใดมาประยุกต์ใช้ในการออกกำลังกาย", correct: "F = Frequency", choices: ["F = Frequency", "I = Intensity", "T = Time", "T = Type"] },
+            { q: "ค่าพลังงานทั้งหมด (Total Daily Energy Expenditure: TDEE) ที่เท่ากับ 1.2 x BEE เหมาะกับผู้มีกิจกรรมในแต่ละวันแบบใด", correct: "ออกกำลังกายน้อยมาก หรือไม่ออกเลย", choices: ["ออกกำลังกายน้อยมาก หรือไม่ออกเลย", "ออกกำลังกายเบาๆ 1-3 วันต่อสัปดาห์", "ออกกำลังกายปานกลาง 3-5 วันต่อสัปดาห์", "ทำงานหนักหรือเป็นนักกีฬาฝึกซ้อมทุกวัน"] },
+            { q: "ข้อใดไม่ใช่ปัจจัยที่เกี่ยวข้องกับการใช้ชีวิตที่ดี", correct: "สวัสดิภาพ", choices: ["การจัดการความเครียด", "การนอนหลับพักผ่อน", "สวัสดิภาพ", "การบริโภคอาหารที่เหมาะสม"] },
+            { q: "ข้อใดเป็นความเสี่ยงที่อาจเกิดขึ้นได้เมื่อเลือกบริโภคอาหารแบบ High protein diet เป็นระยะเวลานาน", correct: "ขาดกรดอะมิโนจำเป็นที่ร่างกายสร้างเองไม่ได้", choices: ["การสะสมของคาร์โบไฮเดรตที่ตับสูงเกินไป", "ขาดกรดอะมิโนจำเป็นที่ร่างกายสร้างเองไม่ได้", "ไตทำงานหนักขึ้นในการขับของเสียกลุ่มยูเรีย", "ภาวะน้ำตาลในเลือดต่ำเรื้อรัง"] },
+            { q: "ข้อใดบอกประโยชน์ของการออกกำลังกายทางด้านร่างกายได้ถูกต้องมากที่สุด", correct: "กล้ามเนื้อจะมีการเจริญเติบโตขึ้น", choices: ["กระดูกมีความเปราะบางลงเพื่อเพิ่มความยืดหยุ่น", "กล้ามเนื้อจะมีการเจริญเติบโตขึ้น", "ช่วยลดปริมาณเม็ดเลือดขาวในร่างกาย", "ทำให้สมองส่วนหน้าลดขนาดลงเพื่อพักผ่อน"] },
+            { q: "นางสาวมาร์กี้ อายุ 20 ปี ส่วนสูง 175 cm. น้ำหนัก 43 Kg มีพฤทีพรรรมสุขภาพ ชอบดื่มน้ำอัดลมออกกำลังกายเดือนละ 1 ครั้ง ไม่รับประทานอาหารเช้า เน้นรับประทานอาหารมื้อเย็นเป็นอาหารปิ้ง ย่าง จงคำนวณ Body mass index ของนางสาวมาร์กี้", correct: "14.04 kg/m2", choices: ["14.04 kg/m2", "16.50 kg/m2", "18.50 kg/m2", "21.22 kg/m2"] }
+        ];
+
+        let currentActiveQuestions = []; 
+        let currentPlayer = "";
+        let answeredCount = 0;
+        let totalScore = 0;
+        let globalScoresMap = {}; 
+
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        // ระบบควบคุม Modal กระดานคะแนน
+        async function openLeaderboardModal() {
+            const modal = document.getElementById('leaderboard-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('div').classList.remove('scale-95');
+            }, 10);
+            await fetchGlobalLeaderboard('modal-leaderboard');
+        }
+
+        function closeLeaderboardModal() {
+            const modal = document.getElementById('leaderboard-modal');
+            modal.classList.add('opacity-0');
+            modal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // ควบคุมระบบลงชื่อผู้ใช้เพื่อเริ่มข้อสอบ
+        async function startQuiz() {
+            const nameInput = document.getElementById('username-input').value.trim();
+            if (!nameInput) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'อุ๊ย! ลืมพิมพ์ชื่อหรือเปล่าครับ?',
+                    text: 'กรุณากรอกชื่อสำหรับร่วมการบันทึกสถิติลงระบบก่อนเริ่มเล่นนะครับ',
+                    confirmButtonText: 'รับทราบ',
+                });
+                return;
+            }
+            currentPlayer = nameInput;
+            
+            // โหลดสถิติลง Map เผื่อไว้ตรวจสอบประวัติเดิม
+            await fetchGlobalLeaderboard('main-leaderboard');
+
+            document.getElementById('auth-box').classList.add('hidden');
+            document.getElementById('current-player-name').innerText = currentPlayer;
+            document.getElementById('user-badge').classList.remove('hidden');
+            document.getElementById('quiz-container').classList.remove('hidden');
+            
+            resetQuizState();
+            prepareAndRenderQuiz();
+        }
+
+        // จัดเตรียมและเรนเดอร์คำถาม
+        function prepareAndRenderQuiz() {
+            const deepClone = JSON.parse(JSON.stringify(masterQuestionsData));
+            currentActiveQuestions = shuffle(deepClone);
+            
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = '';
+            
+            currentActiveQuestions.forEach((item, index) => {
+                const shuffledChoices = shuffle([...item.choices]);
+                const card = document.createElement('div');
+                
+                const displayClass = (index === 0) ? "fade-in" : "hidden";
+                card.id = `question-card-${index}`;
+                card.className = `bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-md shadow-slate-100 question-card ${displayClass}`;
+                
+                // แก้ปัญหาตัวอักษรพิเศษในสตริงโจทย์/ช้อยส์
+                const safeCorrect = item.correct.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+                let html = `
+                    <div class="flex items-start gap-3 mb-5">
+                        <span class="text-xs font-bold text-slate-500 bg-slate-100 border border-slate-200/60 px-2.5 py-1 rounded-lg mt-0.5 min-w-[28px] text-center shrink-0 shadow-sm">${index + 1}</span>
+                        <h3 class="text-sm sm:text-base font-semibold text-slate-800 leading-relaxed">${item.q}</h3>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="options-group-${index}">
+                `;
+                
+                shuffledChoices.forEach((choice) => {
+                    const safeChoice = choice.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    html += `
+                        <button 
+                            type="button" 
+                            onclick="checkAnswer(this, ${index}, '${safeChoice}', '${safeCorrect}')"
+                            class="choice-btn text-left px-4 sm:px-5 py-3.5 border border-slate-200 rounded-xl text-slate-600 font-medium text-xs sm:text-sm focus:outline-none flex justify-between items-center group bg-slate-50/50 min-h-[50px]"
+                        >
+                            <span class="pr-3 leading-snug">${choice}</span>
+                            <span class="icon-status text-slate-300 opacity-0 group-hover:opacity-100 transition-all duration-200 shrink-0 transform translate-x-1 group-hover:translate-x-0"><i class="fa-solid fa-chevron-right text-[10px]"></i></span>
+                        </button>
+                    `;
+                });
+                
+                html += `</div>`;
+                card.innerHTML = html;
+                container.appendChild(card);
+            });
+        }
+
+        // ตรวจสอบและแสดงเฉลยคำตอบ
+        function checkAnswer(btn, qIndex, selected, correct) {
+            const optionsGroup = document.getElementById(`options-group-${qIndex}`);
+            const buttons = optionsGroup.getElementsByTagName('button');
+            
+            // ล้างอักขระพิเศษเพื่อตรวจสอบความถูกต้องให้แม่นยำขึ้น
+            const cleanSelected = selected.replace(/&quot;/g, '"').trim();
+            const cleanCorrect = correct.replace(/&quot;/g, '"').trim();
+
+            for (let b of buttons) {
+                b.disabled = true;
+                b.classList.remove('hover:bg-slate-50', 'bg-slate-50/50', 'text-slate-600', 'group');
+                const statusSpan = b.querySelector('.icon-status');
+                statusSpan.classList.remove('opacity-0');
+                
+                const currentBtnText = b.querySelector('span').innerText.trim();
+
+                if (currentBtnText === cleanCorrect) {
+                    b.classList.add('bg-emerald-50', 'border-emerald-300', 'text-emerald-800', 'font-bold');
+                    statusSpan.innerHTML = '<i class="fa-solid fa-check text-xs text-emerald-500"></i>';
+                } else {
+                    b.classList.add('bg-white', 'border-slate-100', 'text-slate-300', 'opacity-60');
+                    statusSpan.innerHTML = '';
+                }
+            }
+            
+            const currentStatusSpan = btn.querySelector('.icon-status');
+            if (cleanSelected === cleanCorrect) {
+                btn.classList.replace('bg-emerald-50', 'bg-emerald-600');
+                btn.classList.add('text-white', 'border-emerald-600', 'shadow-md', 'shadow-emerald-200');
+                btn.classList.remove('text-emerald-800', 'opacity-60');
+                currentStatusSpan.innerHTML = '<i class="fa-solid fa-check text-xs text-white"></i>';
+                totalScore++;
+                document.getElementById('live-score').innerText = totalScore;
+            } else {
+                btn.classList.add('bg-rose-50', 'border-rose-300', 'text-rose-700', 'font-bold', 'shadow-sm');
+                btn.classList.remove('bg-white', 'text-slate-300', 'opacity-60');
+                currentStatusSpan.innerHTML = '<i class="fa-solid fa-xmark text-xs text-rose-500"></i>';
+            }
+            
+            answeredCount++;
+            const progressPercent = (answeredCount / currentActiveQuestions.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+            
+            const nextIndex = qIndex + 1;
+            if (nextIndex < currentActiveQuestions.length) {
+                const nextCard = document.getElementById(`question-card-${nextIndex}`);
+                if (nextCard) {
+                    setTimeout(() => {
+                        nextCard.classList.remove('hidden');
+                        nextCard.classList.add('fade-in');
+                        // ปรับ Auto-Scroll ให้มีความนุ่มนวลและตรงตามตำแหน่งสายตาพอดี
+                        nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 400);
+                }
+            } else if (answeredCount === currentActiveQuestions.length) {
+                setTimeout(() => {
+                    showResults();
+                }, 800);
+            }
+        }
+
+        // จัดการหน้าจอสรุปผลสถิติหลังทำเสร็จ
+        async function showResults() {
+            document.getElementById('quiz-container').classList.add('hidden');
+            const resultBox = document.getElementById('result-box');
+            document.getElementById('final-score').innerText = totalScore;
+            
+            const percent = Math.round((totalScore / currentActiveQuestions.length) * 100);
+            document.getElementById('score-percent').innerText = `คิดเป็นร้อยละ ${percent}%`;
+            
+            let previousHighScore = globalScoresMap[currentPlayer];
+            let metaText = "";
+
+            if (previousHighScore === undefined || totalScore > previousHighScore) {
+                metaText = previousHighScore !== undefined 
+                    ? `ว้าว! คุณ ${currentPlayer} ทำลายสถิติเก่าของตัวเองได้สำเร็จ! ระบบกำลังบันทึกข้อมูลล่าสุด...`
+                    : `เก่งมากครับคุณ ${currentPlayer}! ระบบกำลังส่งผลคะแนนเพื่ออัปเดตตารางผู้นำออนไลน์...`;
+                document.getElementById('result-meta-text').innerText = metaText;
+                resultBox.classList.remove('hidden');
+                
+                await sendScoreToGoogleForm(currentPlayer, totalScore);
+            } else {
+                metaText = `คุณเคยจับรอบทดสอบก่อนหน้านี้ไว้ดีกว่า คะแนนเดิมสูงสุดของคุณคือ ${previousHighScore} คะแนน (คะแนนรอบนี้จึงไม่จัดส่งซ้ำคลาวด์)`;
+                document.getElementById('result-meta-text').innerText = metaText;
+                resultBox.classList.remove('hidden');
+            }
+
+            setTimeout(async () => {
+                await fetchGlobalLeaderboard('main-leaderboard');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'บันทึกเรียบร้อย!',
+                    text: 'ข้อมูลคะแนนทำเนียบผู้นำออนไลน์อัปเดตเรียบร้อยแล้วครับ!',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }, 2500);
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+        }
+
+        // ส่งคะแนนไปยัง Google Form แบบเบื้องหลัง
+        async function sendScoreToGoogleForm(name, score) {
+            if (GOOGLE_FORM_URL.includes("XXXXXX")) return; 
+            
+            const params = new URLSearchParams();
+            params.append(ENTRY_NAME_ID, name);
+            params.append(ENTRY_SCORE_ID, score);
+            
+            try {
+                await fetch(GOOGLE_FORM_URL, { 
+                    method: 'POST', 
+                    mode: 'no-cors', 
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params.toString() 
+                });
+            } catch (error) { 
+                console.error("Error uploading:", error); 
+            }
+        }
+
+        // ดึงข้อมูล Real-time ล่าสุดจาก Google Sheets มารันจัดอันดับ
+        async function fetchGlobalLeaderboard(targetTableId = 'main-leaderboard') {
+            const leaderboardBody = document.getElementById(targetTableId);
+            if (!leaderboardBody) return;
+
+            if (GOOGLE_SHEET_CSV_URL.includes("XXXXXX")) {
+                leaderboardBody.innerHTML = `<tr><td colspan="3" class="text-center py-6 text-slate-400 italic">ระบบออฟไลน์อยู่: กรุณาผูกบัญชี Google Sheets ก่อนใช้งานแบบรวมเซิร์ฟเวอร์ครับ</td></tr>`;
+                return;
+            }
+
+            try {
+                const response = await fetch(`${GOOGLE_SHEET_CSV_URL}&t=${new Date().getTime()}`);
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                const data = await response.text();
+                const lines = data.split('\n').map(line => {
+                    return line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                });
+                
+                let localMap = {};
+                for (let i = 1; i < lines.length; i++) {
+                    if (lines[i].length < 3) continue;
+                    
+                    let name = lines[i][1]?.replace(/"/g, '').trim();
+                    let score = parseInt(lines[i][2]?.replace(/"/g, '').trim());
+                    
+                    if (name === "ชื่อผู้ใช้งาน" || name === "ชื่อผู้ใช้" || name === "Timestamp") continue;
+                    
+                    if (name && !isNaN(score)) {
+                        if (localMap[name] === undefined || score > localMap[name]) { 
+                            localMap[name] = score; 
+                        }
+                    }
+                }
+                
+                globalScoresMap = localMap;
+                let sortedScores = Object.keys(globalScoresMap).map(name => {
+                    return { name: name, score: globalScoresMap[name] };
+                }).sort((a, b) => b.score - a.score);
+
+                leaderboardBody.innerHTML = '';
+                if (sortedScores.length === 0) {
+                    leaderboardBody.innerHTML = `<tr><td colspan="3" class="text-center py-6 text-slate-400 italic">ยังไม่มีประวัติรายชื่อเข้าสอบในระบบออนไลน์ในขณะนี้</td></tr>`;
+                    return;
+                }
+
+                sortedScores.forEach((row, index) => {
+                    let rankDisplay = "";
+                    let rowBg = "";
+                    
+                    if (index === 0) {
+                        rankDisplay = `
+                            <div class="flex justify-center items-center">
+                                <i class="fa-solid fa-crown text-amber-500 text-sm drop-shadow-[0_1px_2px_rgba(245,158,11,0.3)] animate-bounce"></i>
+                            </div>`;
+                    } else if (index === 1) {
+                        rankDisplay = `
+                            <div class="flex justify-center items-center">
+                                <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-[10px] font-bold">2</span>
+                            </div>`;
+                    } else if (index === 2) {
+                        rankDisplay = `
+                            <div class="flex justify-center items-center">
+                                <span class="w-5 h-5 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-[10px] font-bold">3</span>
+                            </div>`;
+                    } else {
+                        rankDisplay = `<span class="text-slate-400 font-bold text-[11px]">${index + 1}</span>`;
+                    }
+                    
+                    // ปรับเอฟเฟกต์สีชื่อผู้ใช้ปัจจุบันให้เด่นและเริ่ดกว่าเดิม
+                    if (currentPlayer && row.name === currentPlayer) {
+                        rowBg = "my-rank-highlight font-bold text-slate-900";
+                    }
+
+                    const tr = document.createElement('tr');
+                    tr.className = `border-b border-slate-100 transition-colors hover:bg-slate-50 ${rowBg}`;
+                    tr.innerHTML = `
+                        <td class="py-3 px-3 text-center align-middle">${rankDisplay}</td>
+                        <td class="py-3 px-1 text-slate-800 truncate align-middle">${row.name} ${row.name === currentPlayer ? '<span class="text-[9px] bg-emerald-500 text-white font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse">คุณ</span>' : ''}</td>
+                        <td class="py-3 px-3 text-right text-slate-950 font-bold align-middle">${row.score} <span class="text-slate-400 font-normal text-[10px]">/40</span></td>
+                    `;
+                    leaderboardBody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error("Error leaderboard:", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เชื่อมต่อฐานข้อมูลล้มเหลว',
+                    text: 'กรุณาตรวจสอบโครงสร้างการเปิดแชร์ลิงก์ของ Google Sheets ของคุณใหม่อีกครั้งครับ',
+                    confirmButtonText: 'ตกลง'
+                });
+            }
+        }
+
+        function resetQuizState() {
+            answeredCount = 0;
+            totalScore = 0;
+            document.getElementById('live-score').innerText = '0';
+            document.getElementById('progress-bar').style.width = '0%';
+        }
+
+        function resetQuiz() {
+            document.getElementById('result-box').classList.add('hidden');
+            document.getElementById('quiz-container').classList.remove('hidden');
+            resetQuizState();
+            prepareAndRenderQuiz(); 
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function changeUser() {
+            document.getElementById('result-box').classList.add('hidden');
+            document.getElementById('user-badge').classList.add('hidden');
+            document.getElementById('username-input').value = '';
+            document.getElementById('auth-box').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
