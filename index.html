@@ -37,9 +37,17 @@
             from { opacity: 0; transform: translateY(16px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        /* สไตล์ Custom Scrollbar สำหรับตารางอันดับ */
+        .leaderboard-scroll {
+            max-height: 280px; /* ล็อกความสูงตารางไม่ให้ยาวทะลุจอ */
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+        .leaderboard-scroll::-webkit-scrollbar { width: 5px; }
+        .leaderboard-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+        .leaderboard-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .leaderboard-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
         /* Custom SweetAlert2 Theme */
         .swal2-popup {
@@ -88,7 +96,7 @@
     <header class="max-w-3xl mx-auto w-full px-4 sm:px-6 pt-8 sm:pt-12 pb-5 flex flex-col sm:flex-row justify-between items-start sm:items-end border-b border-slate-200/80 gap-4">
         <div>
             <span class="inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-bold tracking-wider text-indigo-500 bg-indigo-50 px-2.5 py-1 rounded-md uppercase mb-2">
-                <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>  Final 0042010
+                <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span> Final - 0042010
             </span>
             <h1 class="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5 tracking-tight">แนวข้อสอบออกกำลังกาย & โภชนาการ</h1>
         </div>
@@ -109,15 +117,30 @@
         
         <div id="auth-box" class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xl shadow-slate-200/40 max-w-md mx-auto my-6 sm:my-12 fade-in">
             <div class="w-12 h-12 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-center mb-4 shadow-sm">
-                <i class="fa-regular fa-globe text-slate-700 text-lg"></i>
+                <i class="fa-regular fa-user-check text-slate-700 text-lg"></i>
             </div>
             <h2 class="text-base sm:text-lg font-bold text-slate-900 mb-1">ยินดีต้อนรับเข้าสู่ระบบสอบออนไลน์</h2>
-            <p class="text-xs sm:text-sm text-slate-400 mb-6 leading-relaxed">ข้อมูลและคะแนนสูงสุดของคุณจะถูกจัดอันดับรวมแบบ Real-time กับผู้เข้าสอบท่านอื่นบนระบบคลาวด์</p>
+            <p class="text-xs sm:text-sm text-slate-400 mb-6 leading-relaxed">เลือกชื่อของคุณจากรายการเพื่อเริ่มต้นทำข้อสอบและบันทึกคะแนนรวมแบบ Real-time</p>
             
             <div class="space-y-4">
                 <div>
-                    <label class="block text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">ชื่อผู้ใช้งานของคุณ</label>
-                    <input type="text" id="username-input" maxlength="25" placeholder="พิมพ์ชื่อเล่นหรือชื่อจริง..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:border-slate-400 focus:bg-white transition-all text-slate-800 font-semibold shadow-inner placeholder:text-slate-300">
+                    <label class="block text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">เลือกผู้ใช้งาน</label>
+                    <div class="relative">
+                        <select id="username-select" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:border-slate-400 focus:bg-white transition-all text-slate-800 font-semibold shadow-sm appearance-none cursor-pointer">
+                            <option value="" disabled selected class="text-slate-300">-- คลิกเพื่อเลือกชื่อของคุณ --</option>
+                            <option value="ค๊อปเตอร์">ค๊อปเตอร์</option>
+                            <option value="ไฟต์">ไฟต์</option>
+                            <option value="ฟิล์ม">ฟิล์ม</option>
+                            <option value="แทม">แทม</option>
+                            <option value="โซดา">โซดา</option>
+                            <option value="ปลื้ม">ปลื้ม</option>
+                            <option value="อาร์ม">อาร์ม</option>
+                            <option value="มิว">มิว</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="flex flex-col sm:flex-row gap-3 pt-2">
@@ -163,7 +186,7 @@
                     </h3>
                     <button onclick="fetchGlobalLeaderboard('main-leaderboard')" class="text-indigo-500 hover:text-indigo-600 text-[10px] sm:text-[11px] font-bold transition-colors flex items-center gap-1"><i class="fa-solid fa-arrows-rotate"></i> รีเฟรชอันดับ</button>
                 </div>
-                <div class="overflow-x-auto rounded-2xl border border-slate-100 shadow-inner">
+                <div class="rounded-2xl border border-slate-100 shadow-inner bg-slate-50/20 overflow-hidden">
                     <table class="w-full text-left border-collapse text-xs table-fixed">
                         <thead>
                             <tr class="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold">
@@ -172,17 +195,21 @@
                                 <th class="py-3.5 px-3 w-28 text-right">คะแนนรวมสูงสุด</th>
                             </tr>
                         </thead>
-                        <tbody id="main-leaderboard" class="text-slate-600 divide-y divide-slate-50 font-medium">
-                            <tr><td colspan="3" class="text-center py-6 text-slate-400 italic">กำลังโหลดคะแนนจากเซิร์ฟเวอร์...</td></tr>
-                        </tbody>
                     </table>
+                    <div class="leaderboard-scroll">
+                        <table class="w-full text-left border-collapse text-xs table-fixed">
+                            <tbody id="main-leaderboard" class="text-slate-600 divide-y divide-slate-50 font-medium">
+                                <tr><td colspan="3" class="text-center py-6 text-slate-400 italic">กำลังโหลดคะแนนจากเซิร์ฟเวอร์...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
     <div id="leaderboard-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
-        <div class="bg-white rounded-3xl border border-slate-150 w-full max-w-md p-5 sm:p-7 shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[80vh]">
+        <div class="bg-white rounded-3xl border border-slate-150 w-full max-w-md p-5 sm:p-7 shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[85vh]">
             <div class="flex justify-between items-center pb-4 border-b border-slate-100 shrink-0">
                 <h3 class="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-2">
                     <i class="fa-solid fa-trophy text-amber-500 text-base"></i> ทำเนียบอันดับเกียรติยศ (Live)
@@ -192,19 +219,23 @@
                 </button>
             </div>
             
-            <div class="overflow-y-auto my-4 rounded-2xl border border-slate-100 flex-grow shadow-inner bg-slate-50/30">
-                <table class="w-full text-left border-collapse text-xs table-fixed">
-                    <thead class="sticky top-0 z-10 bg-slate-50 border-b border-slate-100">
-                        <tr class="text-slate-400 font-bold">
+            <div class="my-4 rounded-2xl border border-slate-100 shadow-inner bg-slate-50/30 overflow-hidden flex flex-col">
+                <table class="w-full text-left border-collapse text-xs table-fixed shrink-0">
+                    <thead class="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold">
+                        <tr>
                             <th class="py-3 px-3 w-14 text-center">อันดับ</th>
                             <th class="py-3 px-1 w-auto">ชื่อผู้ใช้</th>
                             <th class="py-3 px-3 w-28 text-right">คะแนนรวมสูงสุด</th>
                         </tr>
                     </thead>
-                    <tbody id="modal-leaderboard" class="text-slate-600 divide-y divide-slate-50 font-medium">
-                        <tr><td colspan="3" class="text-center py-6 text-slate-400 italic">กำลังดึงข้อมูลอันดับล่าสุด...</td></tr>
-                    </tbody>
                 </table>
+                <div class="leaderboard-scroll">
+                    <table class="w-full text-left border-collapse text-xs table-fixed">
+                        <tbody id="modal-leaderboard" class="text-slate-600 divide-y divide-slate-50 font-medium">
+                            <tr><td colspan="3" class="text-center py-6 text-slate-400 italic">กำลังดึงข้อมูลอันดับล่าสุด...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
             
             <div class="pt-1 shrink-0">
@@ -288,7 +319,6 @@
             return array;
         }
 
-        // ระบบควบคุม Modal กระดานคะแนน
         async function openLeaderboardModal() {
             const modal = document.getElementById('leaderboard-modal');
             modal.classList.remove('hidden');
@@ -308,21 +338,21 @@
             }, 300);
         }
 
-        // ควบคุมระบบลงชื่อผู้ใช้เพื่อเริ่มข้อสอบ
         async function startQuiz() {
-            const nameInput = document.getElementById('username-input').value.trim();
+            const selectElement = document.getElementById('username-select');
+            const nameInput = selectElement.value;
+            
             if (!nameInput) {
                 Swal.fire({
                     icon: 'warning',
-                    title: 'อุ๊ย! ลืมพิมพ์ชื่อหรือเปล่าครับ?',
-                    text: 'กรุณากรอกชื่อสำหรับร่วมการบันทึกสถิติลงระบบก่อนเริ่มเล่นนะครับ',
-                    confirmButtonText: 'รับทราบ',
+                    title: 'ลืมเลือกชื่อหรือเปล่าครับ?',
+                    text: 'กรุณาเลือกชื่อเล่นของคุณจากรายการ Dropdown ก่อนกดเริ่มทำข้อสอบนะครับ',
+                    confirmButtonText: 'ตกลง',
                 });
                 return;
             }
             currentPlayer = nameInput;
             
-            // โหลดสถิติลง Map เผื่อไว้ตรวจสอบประวัติเดิม
             await fetchGlobalLeaderboard('main-leaderboard');
 
             document.getElementById('auth-box').classList.add('hidden');
@@ -334,7 +364,6 @@
             prepareAndRenderQuiz();
         }
 
-        // จัดเตรียมและเรนเดอร์คำถาม
         function prepareAndRenderQuiz() {
             const deepClone = JSON.parse(JSON.stringify(masterQuestionsData));
             currentActiveQuestions = shuffle(deepClone);
@@ -350,7 +379,6 @@
                 card.id = `question-card-${index}`;
                 card.className = `bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-md shadow-slate-100 question-card ${displayClass}`;
                 
-                // แก้ปัญหาตัวอักษรพิเศษในสตริงโจทย์/ช้อยส์
                 const safeCorrect = item.correct.replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
                 let html = `
@@ -381,12 +409,10 @@
             });
         }
 
-        // ตรวจสอบและแสดงเฉลยคำตอบ
         function checkAnswer(btn, qIndex, selected, correct) {
             const optionsGroup = document.getElementById(`options-group-${qIndex}`);
             const buttons = optionsGroup.getElementsByTagName('button');
             
-            // ล้างอักขระพิเศษเพื่อตรวจสอบความถูกต้องให้แม่นยำขึ้น
             const cleanSelected = selected.replace(/&quot;/g, '"').trim();
             const cleanCorrect = correct.replace(/&quot;/g, '"').trim();
 
@@ -432,7 +458,6 @@
                     setTimeout(() => {
                         nextCard.classList.remove('hidden');
                         nextCard.classList.add('fade-in');
-                        // ปรับ Auto-Scroll ให้มีความนุ่มนวลและตรงตามตำแหน่งสายตาพอดี
                         nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }, 400);
                 }
@@ -443,7 +468,6 @@
             }
         }
 
-        // จัดการหน้าจอสรุปผลสถิติหลังทำเสร็จ
         async function showResults() {
             document.getElementById('quiz-container').classList.add('hidden');
             const resultBox = document.getElementById('result-box');
@@ -464,7 +488,7 @@
                 
                 await sendScoreToGoogleForm(currentPlayer, totalScore);
             } else {
-                metaText = `คุณเคยจับรอบทดสอบก่อนหน้านี้ไว้ดีกว่า คะแนนเดิมสูงสุดของคุณคือ ${previousHighScore} คะแนน (คะแนนรอบนี้จึงไม่จัดส่งซ้ำคลาวด์)`;
+                metaText = `คุณเคยทำรอบทดสอบก่อนหน้านี้ไว้ดีกว่า คะแนนเดิมสูงสุดของคุณคือ ${previousHighScore} คะแนน (คะแนนรอบนี้จึงไม่จัดส่งซ้ำคลาวด์)`;
                 document.getElementById('result-meta-text').innerText = metaText;
                 resultBox.classList.remove('hidden');
             }
@@ -483,7 +507,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' }); 
         }
 
-        // ส่งคะแนนไปยัง Google Form แบบเบื้องหลัง
         async function sendScoreToGoogleForm(name, score) {
             if (GOOGLE_FORM_URL.includes("XXXXXX")) return; 
             
@@ -503,7 +526,6 @@
             }
         }
 
-        // ดึงข้อมูล Real-time ล่าสุดจาก Google Sheets มารันจัดอันดับ
         async function fetchGlobalLeaderboard(targetTableId = 'main-leaderboard') {
             const leaderboardBody = document.getElementById(targetTableId);
             if (!leaderboardBody) return;
@@ -572,7 +594,6 @@
                         rankDisplay = `<span class="text-slate-400 font-bold text-[11px]">${index + 1}</span>`;
                     }
                     
-                    // ปรับเอฟเฟกต์สีชื่อผู้ใช้ปัจจุบันให้เด่นและเริ่ดกว่าเดิม
                     if (currentPlayer && row.name === currentPlayer) {
                         rowBg = "my-rank-highlight font-bold text-slate-900";
                     }
@@ -580,9 +601,9 @@
                     const tr = document.createElement('tr');
                     tr.className = `border-b border-slate-100 transition-colors hover:bg-slate-50 ${rowBg}`;
                     tr.innerHTML = `
-                        <td class="py-3 px-3 text-center align-middle">${rankDisplay}</td>
-                        <td class="py-3 px-1 text-slate-800 truncate align-middle">${row.name} ${row.name === currentPlayer ? '<span class="text-[9px] bg-emerald-500 text-white font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse">คุณ</span>' : ''}</td>
-                        <td class="py-3 px-3 text-right text-slate-950 font-bold align-middle">${row.score} <span class="text-slate-400 font-normal text-[10px]">/40</span></td>
+                        <td class="py-3 px-3 text-center align-middle w-14 shrink-0">${rankDisplay}</td>
+                        <td class="py-3 px-1 text-slate-800 truncate align-middle w-auto">${row.name} ${row.name === currentPlayer ? '<span class="text-[9px] bg-emerald-500 text-white font-bold px-1.5 py-0.5 rounded ml-1 animate-pulse">คุณ</span>' : ''}</td>
+                        <td class="py-3 px-3 text-right text-slate-950 font-bold align-middle w-28 shrink-0">${row.score} <span class="text-slate-400 font-normal text-[10px]">/40</span></td>
                     `;
                     leaderboardBody.appendChild(tr);
                 });
@@ -615,7 +636,7 @@
         function changeUser() {
             document.getElementById('result-box').classList.add('hidden');
             document.getElementById('user-badge').classList.add('hidden');
-            document.getElementById('username-input').value = '';
+            document.getElementById('username-select').selectedIndex = 0;
             document.getElementById('auth-box').classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
